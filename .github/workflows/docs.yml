@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout tgapis/docs (this repo)
+      # 1️⃣ Checkout tgapis/docs (workflow repo)
       - name: Checkout tgapis/docs
         uses: actions/checkout@v4
 
@@ -38,19 +38,18 @@ jobs:
         run: |
           pip install beautifulsoup4 lxml
 
-      # 6️⃣ Prepare input for tl.py
+      # 6️⃣ Prepare input for tl.py (INSIDE output repo)
       - name: Prepare Telegram HTML data
         run: |
-          rm -rf docs/Telegram
-          mkdir -p docs/Telegram
-          cp -r tgapis-x/Telegram/* docs/Telegram/
+          rm -rf output/docs/Telegram
+          mkdir -p output/docs/Telegram
+          cp -r tgapis-x/Telegram/* output/docs/Telegram/
 
-      # 7️⃣ Run tl.py (inside tgapis/docs)
+      # 7️⃣ Run tl.py (INSIDE tgapis/tgdocsapi root)
       - name: Generate tlapi.json
         run: |
-          cd docs
+          cd output
           python tl.py
-          mv tlapi.json ../output/tlapi.json
 
       # 8️⃣ Fetch botapi.json
       - name: Fetch botapi.json
