@@ -22,7 +22,7 @@ jobs:
         run: |
           git clone --branch data --depth 1 https://github.com/tgapis/x tgapis-x
 
-      # 3️⃣ Clone tgapis/tgdocsapi (PRIVATE output repo)
+      # 3️⃣ Clone PRIVATE tgdocsapi (output repo)
       - name: Clone tgapis/tgdocsapi (output)
         run: |
           git clone https://x-access-token:${{ secrets.TGDOCS_PAT }}@github.com/tgapis/tgdocsapi output
@@ -38,20 +38,19 @@ jobs:
         run: |
           pip install beautifulsoup4 lxml
 
-      # 6️⃣ Copy data from tgapis/x → output/docs/Telegram
-      # ❗ NO deletion before tl.py
+      # 6️⃣ Copy Telegram HTML data (EXACT STRUCTURE)
       - name: Prepare Telegram HTML data
         run: |
-          mkdir -p output/docs/Telegram
-          cp -r tgapis-x/Telegram/* output/docs/Telegram/
+          mkdir -p output/docs
+          cp -r tgapis-x/Telegram output/docs/
 
-      # 7️⃣ Run tl.py (INSIDE tgdocsapi root)
+      # 7️⃣ Run tl.py with correct path
       - name: Generate tlapi.json
         run: |
           cd output
-          python tl.py
+          TG_DOCS_PATH="$(pwd)/docs/Telegram" python tl.py
 
-      # 8️⃣ Cleanup input docs (AFTER tl.py)
+      # 8️⃣ Cleanup input docs AFTER generation
       - name: Cleanup input docs
         run: |
           rm -rf output/docs
@@ -63,13 +62,13 @@ jobs:
           https://raw.githubusercontent.com/tgapis/x/data/botapi.json \
           -o output/botapi.json
 
-      # 🔟 Safety check – ONLY JSON files allowed
+      # 🔟 Safety check – ONLY two files allowed
       - name: Safety check (only JSON files)
         run: |
           cd output
           git status --porcelain | awk '{print $2}' | grep -vE '^(tlapi.json|botapi.json)$' && exit 1 || true
 
-      # 1️⃣1️⃣ Commit & push changes
+      # 1️⃣1️⃣ Commit & push
       - name: Commit and push changes
         id: commit
         run: |
@@ -81,14 +80,13 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "pushed=false" >> $GITHUB_OUTPUT
-            echo "No changes to push"
           else
             git commit -m "auto: update tlapi.json & botapi.json"
             git push
             echo "pushed=true" >> $GITHUB_OUTPUT
           fi
 
-      # 🔔 Notify owner on Telegram (ONLY if pushed)
+      # 🔔 Notify owner (only if pushed)
       - name: Notify owner on Telegram
         if: steps.commit.outputs.pushed == 'true'
         run: |
