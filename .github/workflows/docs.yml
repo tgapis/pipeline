@@ -13,16 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout tgapis/docs (workflow repo)
+      # 1️⃣ Checkout workflow repo (tgapis/docs)
       - name: Checkout tgapis/docs
         uses: actions/checkout@v4
 
-      # 2️⃣ Clone tgapis/x (data branch) – DATA SOURCE
+      # 2️⃣ Clone tgapis/x (data branch)
       - name: Clone tgapis/x (data branch)
         run: |
           git clone --branch data --depth 1 https://github.com/tgapis/x tgapis-x
 
-      # 3️⃣ Clone tgapis/tgdocsapi (PRIVATE output repo) – via PAT
+      # 3️⃣ Clone tgapis/tgdocsapi (PRIVATE output repo)
       - name: Clone tgapis/tgdocsapi (output)
         run: |
           git clone https://x-access-token:${{ secrets.TGDOCS_PAT }}@github.com/tgapis/tgdocsapi output
@@ -38,33 +38,38 @@ jobs:
         run: |
           pip install beautifulsoup4 lxml
 
-      # 6️⃣ Prepare input for tl.py (INSIDE output repo)
+      # 6️⃣ Copy data from tgapis/x → output/docs/Telegram
+      # ❗ NO deletion before tl.py
       - name: Prepare Telegram HTML data
         run: |
-          rm -rf output/docs/Telegram
           mkdir -p output/docs/Telegram
           cp -r tgapis-x/Telegram/* output/docs/Telegram/
 
-      # 7️⃣ Run tl.py (INSIDE tgapis/tgdocsapi root)
+      # 7️⃣ Run tl.py (INSIDE tgdocsapi root)
       - name: Generate tlapi.json
         run: |
           cd output
           python tl.py
 
-      # 8️⃣ Fetch botapi.json
+      # 8️⃣ Cleanup input docs (AFTER tl.py)
+      - name: Cleanup input docs
+        run: |
+          rm -rf output/docs
+
+      # 9️⃣ Fetch botapi.json
       - name: Fetch botapi.json
         run: |
           curl -L \
           https://raw.githubusercontent.com/tgapis/x/data/botapi.json \
           -o output/botapi.json
 
-      # 9️⃣ Safety check – ONLY two files allowed
+      # 🔟 Safety check – ONLY JSON files allowed
       - name: Safety check (only JSON files)
         run: |
           cd output
           git status --porcelain | awk '{print $2}' | grep -vE '^(tlapi.json|botapi.json)$' && exit 1 || true
 
-      # 🔟 Commit & push changes
+      # 1️⃣1️⃣ Commit & push changes
       - name: Commit and push changes
         id: commit
         run: |
