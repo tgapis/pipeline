@@ -73,8 +73,8 @@ jobs:
         id: commit
         run: |
           cd output
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "ankit-chaubey"
+          git config user.email "70747360+ankit-chaubey@users.noreply.github.com"
 
           git add tlapi.json botapi.json
 
