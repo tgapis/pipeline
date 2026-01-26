@@ -1,8 +1,8 @@
 name: Update Telegram API JSON
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
+  repository_dispatch:
+    types: [x-data-updated]
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
