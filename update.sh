@@ -7,8 +7,8 @@ set -Eeuo pipefail
 : "${OWNER_ID:?OWNER_ID is required}"
 
 # Config
-GIT_USER="ankit-chaubey"
-GIT_EMAIL="70747360+ankit-chaubey@users.noreply.github.com"
+GIT_USER="Ankit Chaubey"
+GIT_EMAIL="ankitchaubey.dev@gmail.com"
 
 STATUS_TGDOCSAPI="skipped"
 STATUS_WEBCLIENT="skipped"
